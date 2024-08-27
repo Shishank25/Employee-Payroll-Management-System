@@ -1,16 +1,17 @@
 from tkinter import*
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import pymysql
 import time
+import os, tempfile
 
 class EmployeeSystem:
     def __init__(self,root):
         self.root = root
         self.root.title('Employee Payroll Mgmt Sys')
-        self.root.geometry('1350x700+0+0')
+        self.root.geometry('1350x690+0+0')
         self.root.config(bg='white')
         title = Label(self.root,text = "Employee Payroll Mgmt Sys", font = ('',30,'bold'),bg='#262626',fg='white',anchor='w').place(x=0,y=0,relwidth=1)
-        btn_allemps = Button(self.root,text='Show All Employees',font = ('times new roman',15,'bold'),bg="#7FA1C3",fg='white').place(rely=0.01,relx=0.85,)    
+        btn_allemps = Button(self.root,text='Show All Employees',command=self.emp_frame,font = ('times new roman',15,'bold'),bg="#7FA1C3",fg='white').place(rely=0.01,relx=0.85,)    
 
 #----------------------------FRAMES--------------------------
 
@@ -34,7 +35,7 @@ class EmployeeSystem:
     #   Frame 1
     
         Frame1 = Frame(self.root,bd=5,relief =RIDGE,bg='white')
-        Frame1.place(relx=0.01,y=70,relwidth=750,height=620) 
+        Frame1.place(x=5,y=70,width=760,height=620) 
         title2 = Label(Frame1,text = "Employee Details", font = ('times new roman',30,'bold'),bg='darkgray',fg='white',anchor='w').place(x=0,y=0,relwidth=1)
 
         
@@ -223,7 +224,7 @@ signature not required
         scroll_y.config(command=self.txt_salrec.yview)
         self.txt_salrec.insert(END,sample)
         
-        prnt_btn = Button(sal_frame,text='Print',font=('times new roman',15),bg='lightgray')
+        prnt_btn = Button(sal_frame,text='Print',command=self.print,font=('times new roman',15),bg='lightgray')
         prnt_btn.place(relx=0.5,anchor=CENTER,rely=0.935,height=30,relwidth=0.5)
 
         self.check_connection()
@@ -552,6 +553,106 @@ signature not required
 
         except Exception as ex:
             messagebox.showerror('Error',f'Error due to:{str(ex)}')
+
+    def show(self):
+
+        try:
+            con = pymysql.connect(host='localhost',user='root',password='',db='emps')
+            cur=con.cursor()
+            cur.execute('Select * from emp_sal')
+            rows=cur.fetchall()
+            ##print(rows)
+            self.employee_tree.delete(*self.employee_tree.get_children())
+            for row in rows:
+                self.employee_tree.insert('',END,values=row)
+
+            con.close()
+
+        except Exception as ex:
+            messagebox.showerror('Error',f'Error due to:{str(ex)}')
+    
+    def emp_frame(self):
+
+        self.root2 = Toplevel(self.root)
+        self.root2.title('Employees Salary Data')
+        self.root2.geometry('900x500+100+100')  
+        self.root2.config(bg='white')
+        title = Label(self.root2,text = "All Employees", font = ('',30,'bold'),bg='#262626',fg='white',anchor='w').pack(side=TOP,fill=X)
+        self.root2.focus_force()
+
+        scrolly = Scrollbar(self.root2,orient=VERTICAL)
+        scrolly.pack(side=RIGHT,fill=Y)
+        scrollx = Scrollbar(self.root2,orient=HORIZONTAL)
+        scrollx.pack(side=BOTTOM,fill=X)
+
+        self.employee_tree = ttk.Treeview(self.root2,columns=('emp_code', 'designation', 'name', 'age', 'doj', 'dob', 'experience', 'gender', 'proof', 'mail', 'contact', 'jobloc', 'status', 'address', 'month', 'year', 'basepay', 'tdays', 'absent', 'medical', 'pf', 'convence', 'netsal', 'salrec'),yscrollcommand=scrolly.set,xscrollcommand=scrollx.set)
+        self.employee_tree.heading('emp_code',text='E_ID')
+        self.employee_tree.heading('designation',text='Designation')
+        self.employee_tree.heading('name',text='Name')
+        self.employee_tree.heading('age',text='Age')
+        self.employee_tree.heading('doj',text='DOJ')
+        self.employee_tree.heading('dob',text='DOB')
+        self.employee_tree.heading('experience',text='EXP')
+        self.employee_tree.heading('gender',text='Gender')
+        self.employee_tree.heading('proof',text='ProofID')
+        self.employee_tree.heading('mail',text='Mail')
+        self.employee_tree.heading('contact',text='Contact_No')
+        self.employee_tree.heading('jobloc',text='Jloc')
+        self.employee_tree.heading('status',text='Status')
+        self.employee_tree.heading('address',text='Address')
+        self.employee_tree.heading('month',text='Month')
+        self.employee_tree.heading('year',text='Year')
+        self.employee_tree.heading('basepay',text='Base_Pay')
+        self.employee_tree.heading('tdays',text='Total_Days')
+        self.employee_tree.heading('absent',text='Absent')
+        self.employee_tree.heading('medical',text='Medical')
+        self.employee_tree.heading('pf',text='Provident_F')
+        self.employee_tree.heading('convence',text='Convence')
+        self.employee_tree.heading('netsal',text='Net_Salary')
+        self.employee_tree.heading('salrec',text='Receipt')
+        self.employee_tree['show']='headings'
+
+        self.employee_tree.column('emp_code', width=50)
+        self.employee_tree.column('designation', width=100)
+        self.employee_tree.column('name', width=100)
+        self.employee_tree.column('age', width=40)
+        self.employee_tree.column('doj', width=50)
+        self.employee_tree.column('dob', width=50)
+        self.employee_tree.column('experience', width=50)
+        self.employee_tree.column('gender', width=50)
+        self.employee_tree.column('proof', width=50)
+        self.employee_tree.column('mail', width=50)
+        self.employee_tree.column('contact', width=100)
+        self.employee_tree.column('jobloc', width=100)
+        self.employee_tree.column('status', width=50)
+        self.employee_tree.column('address', width=100)
+        self.employee_tree.column('month', width=50)
+        self.employee_tree.column('year', width=50)
+        self.employee_tree.column('basepay', width=70)
+        self.employee_tree.column('tdays', width=40)
+        self.employee_tree.column('absent', width=40)
+        self.employee_tree.column('medical', width=40)
+        self.employee_tree.column('pf', width=40)
+        self.employee_tree.column('convence', width=40)
+        self.employee_tree.column('netsal', width=100)
+        self.employee_tree.column('salrec', width=100)
+
+        scrollx.config(command=self.employee_tree.xview)
+        scrolly.config(command=self.employee_tree.yview)
+
+        self.employee_tree.pack(fill=BOTH,expand=1)
+        self.show()
+
+        self.root2.mainloop()
+    
+    def print(self):
+        file_ = tempfile.mktemp('.txt')
+        open(file_,'w').write(self.txt_salrec.get('1.0',END))
+        os.startfile(file_,'print')
+
+
+        
+
             
 
 
